@@ -37,6 +37,7 @@ TARGET = $(BIN_DIR)/test_io
 CCXML  = MSP430G2553.ccxml
 
 SOURCES = main.c \
+          drivers/mcu_init.c \
           drivers/io.c
 
 OBJECT_NAMES = $(SOURCES:.c=.o)

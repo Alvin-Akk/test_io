@@ -1,8 +1,16 @@
 #include <msp430.h>
 #include "drivers/io.h"
+#include "drivers/mcu_init.h"
+
+static void test_setup(void)
+{
+    mcu_init();
+}
 
 static void test_blink_led(void)
 {
+    test_setup();
+    // TODO: Replace with LED driver
     const struct io_config led_config =
     {
         .dir = IO_DIR_OUTPUT,
@@ -21,8 +29,6 @@ static void test_blink_led(void)
 
 int main(void)
 {
-    // TODO: Move to mcu_init
-    WDTCTL = WDTPW + WDTHOLD; // stop watchdog timer
     test_blink_led();
     return 0;
 }
