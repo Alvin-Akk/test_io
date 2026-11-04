@@ -41,6 +41,53 @@ static volatile uint8_t *const port_in_regs[IO_PORT_CNT] = { &P1IN, &P2IN };
 static volatile uint8_t *const port_sel1_regs[IO_PORT_CNT] = { &P1SEL, &P2SEL };
 static volatile uint8_t *const port_sel2_regs[IO_PORT_CNT] = { &P1SEL2, &P2SEL2 };
 
+/* Unused pins should be
+ * "Switched to port function, output direction or input with pullup/pulldown enabled"
+ * according to the datasheet (2.5). Importantly, they should not be left as floating
+ * inputs because that leads to unpredictable (noise) current consumption. I choose to
+ * configure them as output (instead of input) to lower the risk of short-circuit, and
+ * pull them down. */
+#define UNUSED_CONFIG                                                                              \
+    {                                                                                              \
+        IO_SELECT_GPIO, IO_RESISTOR_ENABLED, IO_DIR_OUTPUT, IO_OUT_LOW                             \
+    }
+
+// This array holds the initial configuration for all IO pins.
+static const struct io_config io_initial_configs[IO_PORT_CNT * IO_PIN_CNT_PER_PORT] = {
+    // Output
+    [IO_TEST_LED] = { IO_SELECT_GPIO, IO_RESISTOR_DISABLED, IO_DIR_OUTPUT, IO_OUT_LOW },
+
+    /* UART RX/TX
+     * Resistor: Not needed (pulled by transmitter/receiver)
+     * Direction: Not applicable
+     * Output: Not applicable */
+    [IO_UART_RXD] = { IO_SELECT_ALT3, IO_RESISTOR_DISABLED, IO_DIR_OUTPUT, IO_OUT_LOW },
+    [IO_UART_TXD] = { IO_SELECT_ALT3, IO_RESISTOR_DISABLED, IO_DIR_OUTPUT, IO_OUT_LOW },
+
+    // Unused pins
+    [IO_UNUSED_1] = UNUSED_CONFIG,
+    [IO_UNUSED_2] = UNUSED_CONFIG,
+    [IO_UNUSED_3] = UNUSED_CONFIG,
+    [IO_UNUSED_4] = UNUSED_CONFIG,
+    [IO_UNUSED_5] = UNUSED_CONFIG,
+    [IO_UNUSED_6] = UNUSED_CONFIG,
+    [IO_UNUSED_7] = UNUSED_CONFIG,
+    [IO_UNUSED_8] = UNUSED_CONFIG,
+    [IO_UNUSED_9] = UNUSED_CONFIG,
+    [IO_UNUSED_10] = UNUSED_CONFIG,
+    [IO_UNUSED_11] = UNUSED_CONFIG,
+    [IO_UNUSED_12] = UNUSED_CONFIG,
+    [IO_UNUSED_13] = UNUSED_CONFIG,
+};
+
+void io_init(void)
+{
+    // TODO: Loop initialize all pins
+    for (io_e io = (io_e)IO_10; io < ARRAY_SIZE(io_initial_configs); io++) {
+        io_configure(io, &io_initial_configs[io]);
+    }
+}
+
 void io_configure(io_e io, const struct io_config *config)
 {
     io_set_select(io, config->select);
